@@ -9,12 +9,15 @@ from Backend.utils.pdf_reader import pdf_to_text
 from Backend.utils.bullet_extractor import extract_bullets_with_ollama
 
 
-def process_cv(pdf_file):
+def process_cv(pdf_file, job_title):
     """
     This function is triggered when the user uploads a PDF in Gradio.
     """
     if pdf_file is None:
         return "❌ Please upload a PDF file first.", None
+    
+    if not job_title or job_title.strip() == "":
+        return "❌ Please enter a job title.", None
 
     # Temporary txt path
     txt_path = "cv_output.txt"
@@ -28,26 +31,37 @@ def process_cv(pdf_file):
     with open(txt_path, "r", encoding="utf-8") as f:
         raw_text = f.read()
 
-    # Step 2 — Ollama cleanup → bullet points
+    # Step 2 — Ollama cleanup → bullet points (with job context)
+    # TODO: Later we can pass job_title to RAG system for context-aware processing
     cleaned_bullets = extract_bullets_with_ollama(raw_text)
+    
+    # Add job title context to output
+    result = f"🎯 Target Job: {job_title}\n\n{'='*60}\n\n{cleaned_bullets}"
 
     # Save for download
     output_path = "clean_bullets.txt"
     with open(output_path, "w", encoding="utf-8") as f:
-        f.write(cleaned_bullets)
+        f.write(f"Target Job: {job_title}\n\n{cleaned_bullets}")
 
-    return cleaned_bullets, output_path
+    return result, output_path
 
 
 # Gradio UI
-with gr.Blocks(title="AI CV Cleaner (Powered by Ollama)") as app:
-    gr.Markdown("## 🧠 AI Career Coach — CV Bullet Cleaner\nUpload your CV as PDF and get clean, professional bullet points.")
+with gr.Blocks(title="AI Career Coach — CV Bullet Cleaner") as app:
+    gr.Markdown("## 🧠 AI Career Coach — CV Bullet Cleaner\nUpload your CV as PDF, specify your target job, and get clean, professional bullet points.")
 
     with gr.Row():
-        pdf_input = gr.File(label="📄 Upload your CV (PDF)", file_types=[".pdf"])
+        with gr.Column():
+            pdf_input = gr.File(label="📄 Upload your CV (PDF)", file_types=[".pdf"])
+        with gr.Column():
+            job_input = gr.Textbox(
+                label="🎯 Target Job Title",
+                placeholder="e.g., Software Engineer, Marketing Manager, Data Analyst...",
+                lines=1
+            )
 
     with gr.Row():
-        submit_btn = gr.Button("🚀 Process CV")
+        submit_btn = gr.Button("🚀 Process CV", variant="primary")
 
     with gr.Row():
         output_text = gr.Textbox(
@@ -65,7 +79,7 @@ with gr.Blocks(title="AI CV Cleaner (Powered by Ollama)") as app:
     # Button logic
     submit_btn.click(
         process_cv,
-        inputs=pdf_input,
+        inputs=[pdf_input, job_input],
         outputs=[output_text, download_btn]
     )
 
