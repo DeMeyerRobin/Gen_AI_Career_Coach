@@ -1,0 +1,21 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+
+# PDFs and large raw data files (but keep the processed data and embeddings)
+*.pdf
+*.PDF
+Data/raw/
+Data/resumes_extracted.csv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python cache
+__pycache__/
+*.egg-info/
