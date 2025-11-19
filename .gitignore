@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Environment Variables
+.env
+.env.local
+
+# ChromaDB
+chroma_db/
+
+# Temporary output files
+cv_output.txt
+clean_bullets.txt
+*.pdf
+
+# Azure Development (not needed)
+__azurite_db_table__.json
+AzuriteConfig/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
