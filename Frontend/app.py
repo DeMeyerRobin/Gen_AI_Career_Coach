@@ -63,15 +63,102 @@ def process_cv(pdf_file, job_title):
 
         # Step 3 — RAG Analysis for improvements
         improvement_analysis = analyze_cv_improvements(cleaned_bullets, job_title)
+        
+        # Step 4 — Generate interview questions
+        interview_questions = generate_interview_questions(cleaned_bullets, job_title)
 
-        return result, output_path, improvement_analysis
+        return result, output_path, improvement_analysis, interview_questions
         
     except Exception as e:
         error_msg = f"❌ Error processing CV: {str(e)}"
         print(f"ERROR: {error_msg}")
         import traceback
         traceback.print_exc()
-        return error_msg, None, ""
+        return error_msg, None, "", ""
+
+
+def generate_interview_questions(cv_text, job_title):
+    """
+    Generate interview questions based on job title using RAG.
+    """
+    if not job_title or job_title.strip() == "":
+        job_title = "Software Engineer"
+    
+    try:
+        # Get matcher
+        matcher = get_matcher()
+        
+        # Find relevant job descriptions
+        relevant_jobs = matcher.find_jobs_for_resume(cv_text, n_results=3, min_score=0.5)
+        
+        if not relevant_jobs:
+            return "⚠️ No relevant jobs found to generate questions."
+        
+        # Build interview questions report
+        report = f"# 🎤 INTERVIEW PREPARATION QUESTIONS\n\n"
+        report += f"**Target Job:** {job_title}\n\n"
+        report += "---\n\n"
+        
+        # General questions based on job
+        report += "## 📋 Common Interview Questions\n\n"
+        report += f"### For {job_title} Position:\n\n"
+        report += "1. **Tell me about yourself and your background**\n"
+        report += f"   - *Focus on: Your experience relevant to {job_title} role*\n\n"
+        
+        report += "2. **Why are you interested in this position?**\n"
+        report += f"   - *Highlight: Your passion for {job_title} work and company alignment*\n\n"
+        
+        report += "3. **What are your greatest strengths?**\n"
+        report += "   - *Use STAR method: Situation, Task, Action, Result*\n\n"
+        
+        report += "4. **Describe a challenging project you worked on**\n"
+        report += "   - *Emphasize: Problem-solving skills and technical expertise*\n\n"
+        
+        report += "5. **Where do you see yourself in 5 years?**\n"
+        report += f"   - *Connect: Your growth with {job_title} career path*\n\n"
+        
+        # Technical/role-specific questions based on job description
+        report += "---\n\n"
+        report += "## 🔧 Role-Specific Questions\n\n"
+        report += "*Based on similar job descriptions in our database:*\n\n"
+        
+        for i, job in enumerate(relevant_jobs[:2], 1):
+            job_desc = job.text[:300]
+            report += f"### Scenario {i}:\n"
+            report += f"*Related to: {job.metadata.get('job_title', 'Unknown')}*\n\n"
+            
+            # Extract key skills/topics from job description
+            keywords = ['experience', 'skills', 'requirements', 'responsibilities']
+            for keyword in keywords:
+                if keyword.lower() in job_desc.lower():
+                    report += f"- **Question:** Describe your {keyword} related to this role\n"
+                    break
+            report += "\n"
+        
+        report += "---\n\n"
+        report += "## 💡 PREPARATION TIPS\n\n"
+        report += "### Before the Interview:\n"
+        report += "- ✅ Research the company thoroughly\n"
+        report += "- ✅ Prepare 3-4 STAR method examples\n"
+        report += "- ✅ Review your CV and be ready to explain gaps\n"
+        report += "- ✅ Prepare questions to ask the interviewer\n\n"
+        
+        report += "### During the Interview:\n"
+        report += "- ✅ Listen carefully to questions before answering\n"
+        report += "- ✅ Use specific examples from your experience\n"
+        report += "- ✅ Be honest about what you don't know\n"
+        report += "- ✅ Show enthusiasm for the role and company\n\n"
+        
+        report += "### Questions to Ask Them:\n"
+        report += "- What does success look like in this role?\n"
+        report += "- What are the team dynamics like?\n"
+        report += "- What are the biggest challenges facing the team?\n"
+        report += "- What opportunities for growth are available?\n"
+        
+        return report
+        
+    except Exception as e:
+        return f"❌ Error generating questions: {str(e)}"
 
 
 def analyze_cv_improvements(cv_text, job_title):
@@ -153,47 +240,98 @@ def analyze_cv_improvements(cv_text, job_title):
         return f"❌ Error analyzing CV: {str(e)}"
 
 
-# Gradio UI
-with gr.Blocks(title="AI Career Coach — CV Bullet Cleaner") as app:
-    gr.Markdown("## 🧠 AI Career Coach — CV Processor & Improvement Analyzer\nUpload your CV as PDF, specify your target job, and get clean bullet points + improvement suggestions using RAG.")
+# Gradio UI with custom CSS
+custom_css = """
+.gradio-container {
+    max-width: 1200px !important;
+}
+.output-markdown {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+"""
 
+with gr.Blocks(title="AI Career Coach", css=custom_css, theme=gr.themes.Soft()) as app:
+    # Header
+    gr.Markdown("""
+    # 🧠 AI Career Coach
+    ### Transform your CV and ace your interview with AI-powered insights
+    Upload your CV, specify your target job, and get personalized feedback powered by RAG (Retrieval-Augmented Generation)
+    """)
+    
+    gr.Markdown("---")
+    
+    # Input Section
     with gr.Row():
-        with gr.Column():
-            pdf_input = gr.File(label="📄 Upload your CV (PDF)", file_types=[".pdf"])
-        with gr.Column():
+        with gr.Column(scale=1):
+            pdf_input = gr.File(
+                label="📄 Upload Your CV", 
+                file_types=[".pdf"],
+                file_count="single"
+            )
             job_input = gr.Textbox(
                 label="🎯 Target Job Title",
-                placeholder="e.g., Software Engineer, Marketing Manager, Data Analyst...",
+                placeholder="e.g., Software Engineer, Data Scientist, Product Manager...",
                 lines=1
             )
-
-    with gr.Row():
-        submit_btn = gr.Button("🚀 Process CV", variant="primary")
-
-    with gr.Row():
+            submit_btn = gr.Button("🚀 Analyze My CV", variant="primary", size="lg")
+        
+        with gr.Column(scale=1):
+            gr.Markdown("""
+            ### 📝 What You'll Get:
+            - ✨ **Cleaned CV bullets** - Professional, concise format
+            - 💡 **Improvement tips** - Based on 1000+ successful CVs
+            - 🎤 **Interview questions** - Tailored to your target role
+            - 📊 **Skills analysis** - What you're missing vs. top candidates
+            """)
+    
+    gr.Markdown("---")
+    
+    # Output Section - Cleaned CV
+    with gr.Column():
+        gr.Markdown("## ✨ Your Cleaned CV")
         output_text = gr.Textbox(
-            label="✨ Cleaned Bullet Points",
-            lines=20,
-            interactive=False
+            label="Cleaned Bullet Points",
+            lines=15,
+            interactive=False,
+            show_label=False
         )
-
-    with gr.Row():
         download_btn = gr.File(
-            label="⬇️ Download Clean Bullet Points",
+            label="⬇️ Download",
             interactive=False
         )
     
-    with gr.Row():
-        improvement_output = gr.Markdown(
-            label="💡 CV Improvement Suggestions (RAG)",
-            value="*Improvement suggestions will appear here after processing...*"
-        )
+    gr.Markdown("---")
+    
+    # Output Section - Improvements and Questions in Tabs
+    with gr.Tabs():
+        with gr.Tab("💡 CV Improvements"):
+            improvement_output = gr.Markdown(
+                value="*Upload your CV and click 'Analyze My CV' to see personalized improvement suggestions...*",
+                elem_classes="output-markdown"
+            )
+        
+        with gr.Tab("🎤 Interview Prep"):
+            interview_output = gr.Markdown(
+                value="*Upload your CV and click 'Analyze My CV' to get interview questions and preparation tips...*",
+                elem_classes="output-markdown"
+            )
+    
+    # Footer
+    gr.Markdown("""
+    ---
+    <center>
+    <small>Powered by RAG, Ollama, and ChromaDB | Analyzing 1000+ CVs and 2000+ job descriptions</small>
+    </center>
+    """)
 
     # Button logic
     submit_btn.click(
         process_cv,
         inputs=[pdf_input, job_input],
-        outputs=[output_text, download_btn, improvement_output]
+        outputs=[output_text, download_btn, improvement_output, interview_output]
     )
 
 
