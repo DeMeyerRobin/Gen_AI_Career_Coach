@@ -164,12 +164,18 @@ class CareerCoachMatcher:
     
     def get_db_stats(self) -> Dict:
         """Get overall database statistics."""
+        # Use cached embedding dimension from embedder initialization
+        try:
+            embedding_dim = getattr(self.embedder, 'embedding_dim', 384)
+        except:
+            embedding_dim = 384
+            
         return {
             "total_resumes": self.resumes_col.count(),
             "total_jobs": self.jobs_col.count(),
             "resume_categories": self.get_category_stats(),
             "embedding_model": EMBEDDING_MODEL,
-            "embedding_dimension": self.embedder.model.get_sentence_embedding_dimension()
+            "embedding_dimension": embedding_dim
         }
 
 
