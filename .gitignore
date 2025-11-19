@@ -4,11 +4,14 @@ __pycache__/
 .DS_Store
 .env
 
-# PDFs and large raw data files (but keep the processed data and embeddings)
+# PDFs and large raw data files
 *.pdf
 *.PDF
 Data/raw/
 Data/resumes_extracted.csv
+
+# ChromaDB database (too large for GitHub - regenerate locally)
+Data/chromadb/
 
 # IDE
 .vscode/
