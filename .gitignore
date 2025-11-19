@@ -1,10 +1,10 @@
-<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.pyc
 
 # Virtual Environment
 .venv/
@@ -18,38 +18,24 @@ env/
 
 # ChromaDB
 chroma_db/
+Data/chromadb/
 
 # Temporary output files
+temp/
 cv_output.txt
 clean_bullets.txt
 *.pdf
-
-# Azure Development (not needed)
-__azurite_db_table__.json
-AzuriteConfig/
-=======
-.venv/
-__pycache__/
-*.pyc
-.DS_Store
-.env
+*.PDF
 
 # PDFs and large raw data files
-*.pdf
-*.PDF
 Data/raw/
 Data/resumes_extracted.csv
-
-# ChromaDB database (too large for GitHub - regenerate locally)
-Data/chromadb/
->>>>>>> ccbd5d2672a421839f2cef34489a03ddb6f61486
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-<<<<<<< HEAD
 *~
 
 # OS
@@ -59,9 +45,7 @@ Thumbs.db
 # Logs
 *.log
 logs/
-=======
+ingestion_log.txt
 
 # Python cache
-__pycache__/
 *.egg-info/
->>>>>>> ccbd5d2672a421839f2cef34489a03ddb6f61486
