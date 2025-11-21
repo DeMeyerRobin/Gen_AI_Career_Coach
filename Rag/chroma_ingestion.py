@@ -32,8 +32,37 @@ class ChromaEmbedder:
             model_name: Name of the sentence-transformers model to use
         """
         print(f"Loading embedding model: {model_name}")
-        self.model = SentenceTransformer(model_name)
-        print(f"✓ Model loaded. Embedding dimension: {self.model.get_sentence_embedding_dimension()}")
+<<<<<<< HEAD
+        self.model = SentenceTransformer(model_name, device='cpu')
+        
+        # CRITICAL: Hardcode dimension to avoid bug with get_sentence_embedding_dimension()
+        if model_name == "all-MiniLM-L6-v2":
+            self.embedding_dim = 384
+        else:
+            # For other models, use encode to get dimension
+            test = self.model.encode(["test"], convert_to_numpy=True)
+            self.embedding_dim = test.shape[1]
+        
+        print(f"✓ Model loaded. Embedding dimension: {self.embedding_dim}")
+=======
+        try:
+            # Load model with explicit device
+            self.model = SentenceTransformer(model_name, device='cpu')
+            
+            # Verify it's a proper model object
+            if isinstance(self.model, dict):
+                raise RuntimeError("Model loaded as dict, not SentenceTransformer")
+            
+            # Get dimension using encode test (more reliable than get_sentence_embedding_dimension)
+            test_emb = self.model.encode(["test"], show_progress_bar=False)
+            self.embedding_dim = test_emb.shape[1] if hasattr(test_emb, 'shape') else len(test_emb[0])
+            
+            print(f"✓ Model loaded. Embedding dimension: {self.embedding_dim}")
+            
+        except Exception as e:
+            print(f"❌ Failed to load model: {e}")
+            raise RuntimeError(f"Could not initialize embedding model: {e}")
+>>>>>>> 048271b2c61fef9e1612883f053d07c1c0f16d2b
     
     def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
         """
@@ -45,7 +74,10 @@ class ChromaEmbedder:
         Returns:
             List of embedding vectors
         """
-        embeddings = self.model.encode(texts, show_progress_bar=True)
+        if isinstance(self.model, dict):
+            raise RuntimeError("Model object is a dict - cannot generate embeddings")
+        
+        embeddings = self.model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
         return embeddings.tolist()
 
 
