@@ -169,7 +169,7 @@ class CareerCoachMatcher:
             "total_jobs": self.jobs_col.count(),
             "resume_categories": self.get_category_stats(),
             "embedding_model": EMBEDDING_MODEL,
-            "embedding_dimension": self.embedder.model.get_sentence_embedding_dimension()
+            "embedding_dimension": self.embedder.embedding_dim
         }
 
 

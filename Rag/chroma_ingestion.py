@@ -32,8 +32,17 @@ class ChromaEmbedder:
             model_name: Name of the sentence-transformers model to use
         """
         print(f"Loading embedding model: {model_name}")
-        self.model = SentenceTransformer(model_name)
-        print(f"✓ Model loaded. Embedding dimension: {self.model.get_sentence_embedding_dimension()}")
+        self.model = SentenceTransformer(model_name, device='cpu')
+        
+        # CRITICAL: Hardcode dimension to avoid bug with get_sentence_embedding_dimension()
+        if model_name == "all-MiniLM-L6-v2":
+            self.embedding_dim = 384
+        else:
+            # For other models, use encode to get dimension
+            test = self.model.encode(["test"], convert_to_numpy=True)
+            self.embedding_dim = test.shape[1]
+        
+        print(f"✓ Model loaded. Embedding dimension: {self.embedding_dim}")
     
     def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
         """
