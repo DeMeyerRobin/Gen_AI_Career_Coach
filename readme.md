@@ -1,308 +1,91 @@
-# AI Career Coach - Gen AI Application
+# 🧠 AI Career Coach
 
-A comprehensive AI-powered career coaching platform that matches resumes with job opportunities using vector embeddings and semantic search.
+An intelligent CV analysis and interview preparation tool powered by RAG (Retrieval-Augmented Generation), Ollama, and ChromaDB.
 
-## 🎯 Project Overview
+## ✨ Features
 
-The AI Career Coach leverages:
-- **Vector Embeddings** - Semantic understanding of resumes and job descriptions
-- **ChromaDB** - Lightweight vector database for efficient similarity search
-- **Deep Learning** - Sentence transformers for high-quality embeddings
-- **PDF Processing** - Automated resume text extraction
-- **Metadata Filtering** - Category-based resume queries
+- **📄 CV Cleaning** - Transform messy CVs into professional bullet points using Ollama
+- **💡 Smart Improvements** - Get personalized suggestions based on 1000+ successful CVs
+- **🎤 Interview Prep** - Generate tailored interview questions for your target role
+- **📊 Skills Analysis** - Identify missing keywords and skills gaps
+- **🔍 RAG-Powered** - Semantic search through 2000+ job descriptions
+
+## 🚀 Quick Start
+
+1. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   pip install tf-keras  # For TensorFlow/Keras compatibility
+   ```
+
+2. **Run the app:**
+   ```bash
+   python Frontend/app.py
+   ```
+
+3. **Open your browser:** `http://localhost:7860`
 
 ## 📁 Project Structure
 
 ```
 Gen_AI_Career_Coach/
-├── Backend/              # API and business logic
-├── Frontend/             # User interface
-├── Models/               # ML/AI models
-├── Interview_module/     # Interview preparation features
-├── Rag/                  # Vector Database (ChromaDB)
-│   ├── chroma_setup.py                    # Initialize ChromaDB
-│   ├── chroma_ingestion.py                # Embed & store documents
-│   ├── extract_resumes.py                 # PDF text extraction
-│   ├── career_coach_matcher.py            # Matching API
-│   ├── quickstart.py                      # Automated setup
-│   ├── requirements_chroma.txt            # Python dependencies
-│   └── CHROMA_SETUP.md                    # Detailed guide
-├── Data/                 # Data storage
-│   ├── chromadb/         # Vector database (auto-created)
-│   ├── resumes_extracted.csv    # Extracted resume texts
-│   ├── Job_Descriptions/        # Cleaned job CSVs
-│   └── raw/
-│       └── cv_samples/          # 1000+ resume PDFs by category
-└── readme.md             # This file
+├── config.py          # Centralized configuration
+├── services/          # Business logic services
+│   ├── cv_analyzer.py       # CV improvement analysis
+│   ├── cv_processor.py      # Main CV processing pipeline
+│   └── interview_generator.py # Interview question generation
+├── Backend/           # Core utilities
+│   └── utils/
+│       ├── pdf_reader.py    # PDF text extraction
+│       └── bullet_extractor.py # Ollama CV cleaning
+├── Frontend/          # Gradio web interface
+│   └── app.py         # Clean UI (now 100 lines!)
+├── Rag/              # RAG system (ChromaDB + embeddings)
+│   ├── career_coach_matcher.py # High-level RAG API
+│   ├── chroma_ingestion.py    # Embedding generation
+│   └── chroma_setup.py        # Database initialization
+├── models/           # AI models
+├── Data/             # ChromaDB database (resumes & jobs)
+├── docs/             # Documentation
+├── demos/            # Demo scripts
+└── temp/             # Temporary output files
 ```
 
-## 🚀 Quick Start
+## 🏗️ Architecture
 
-### 1. Install Dependencies
+**Clean separation of concerns:**
+- `config.py` - All configuration in one place
+- `services/` - Business logic isolated from UI
+- `Backend/utils/` - Reusable utility functions
+- `Frontend/app.py` - Pure UI code, no business logic
+- `Rag/` - RAG system with lazy loading
 
-```powershell
-cd "path\to\Gen_AI_Career_Coach"
-pip install -r Rag\requirements_chroma.txt
-```
+## 🛠️ Tech Stack
 
-### 2. Automated Setup (Recommended)
+- **Ollama (Mistral)** - CV cleaning and text generation
+- **ChromaDB** - Vector database (1000+ resumes, 2000+ jobs)
+- **sentence-transformers** - Text embeddings (all-MiniLM-L6-v2)
+- **Gradio 5** - Modern web UI
+- **PyPDF2** - PDF text extraction
 
-```powershell
-python Rag\quickstart.py
-```
+## 📚 Documentation
 
-This will:
-- ✅ Install all dependencies
-- ✅ Initialize ChromaDB
-- ✅ Extract text from 1000+ resume PDFs
-- ✅ Generate embeddings and store in database
-- ✅ Verify the setup
+See the `docs/` folder for detailed documentation:
+- Project overview
+- Getting started guide
+- File structure
 
-### 3. Manual Setup (Step-by-step)
+## 🎯 How It Works
 
-```powershell
-# Initialize ChromaDB
-python Rag\chroma_setup.py
+1. **Upload CV** → Extract text from PDF
+2. **Clean with Ollama** → Generate professional bullet points
+3. **RAG Analysis** → Compare with 1000+ CVs in ChromaDB
+4. **Generate Insights** → Improvement tips + interview questions
 
-# Extract resume text from PDFs
-python Rag\extract_resumes.py
+## 🤝 Contributing
 
-# Ingest documents into ChromaDB
-python Rag\chroma_ingestion.py
-```
+This is a school project for Howest 2025-2026 Gen AI course.
 
-## 💾 Vector Database: ChromaDB
+## 📝 License
 
-### Why ChromaDB?
-
-- **Lightweight** - No server setup required
-- **Fast** - HNSW indexing for sub-100ms queries
-- **Easy** - Simple Python API
-- **Flexible** - Metadata filtering and custom metadata
-- **Persistent** - Local storage for your project
-
-### Database Contents
-
-| Collection | Documents | Source |
-|-----------|-----------|--------|
-| `resumes` | 1000+ | PDF files in `Data/raw/cv_samples/` |
-| `job_descriptions` | 2,277 | Cleaned CSVs from `Data/Job_Descriptions/` |
-
-### Categories
-
-Resumes are organized in 9 professional categories:
-- `ENGINEERING`
-- `FINANCE`
-- `FITNESS`
-- `HEALTHCARE`
-- `HR`
-- `INFORMATION-TECHNOLOGY`
-- `PUBLIC-RELATIONS`
-- `SALES`
-- `TEACHER`
-
-## 🔍 Basic Usage
-
-### Find Jobs for a Resume
-
-```python
-from Rag.career_coach_matcher import CareerCoachMatcher
-
-matcher = CareerCoachMatcher()
-
-# Find matching jobs
-resume_text = "Senior Software Engineer with Python experience..."
-jobs = matcher.find_jobs_for_resume(resume_text, n_results=10)
-
-for job in jobs:
-    print(f"• {job.metadata['job_title']} ({job.similarity_score:.1%})")
-```
-
-### Find Resumes for a Job
-
-```python
-# Find matching resumes
-resumes = matcher.find_resumes_for_job(
-    job_title="Senior Cloud Engineer",
-    job_description="Looking for AWS expert...",
-    n_results=10,
-    category_filter="INFORMATION-TECHNOLOGY"
-)
-
-for resume in resumes:
-    print(f"• {resume.metadata['category']} ({resume.similarity_score:.1%})")
-```
-
-### Get Database Statistics
-
-```python
-stats = matcher.get_db_stats()
-print(f"Total Resumes: {stats['total_resumes']}")
-print(f"Total Jobs: {stats['total_jobs']}")
-print(f"Embedding Model: {stats['embedding_model']}")
-```
-
-## 🧠 Embedding Model
-
-**Model**: `all-MiniLM-L6-v2`
-- **Dimensions**: 384
-- **Speed**: Fast (~1000 documents/min)
-- **Task**: Semantic search
-- **Accuracy**: Excellent for career matching
-
-**Storage Requirements**:
-- Resumes: ~2-3 MB
-- Jobs: ~1-2 MB
-- Total: ~5-7 MB (highly compressed)
-
-## 📊 Data Pipeline
-
-```
-Input Data
-├── Resume PDFs (1000+)        → Extract Text
-├── Job Description CSVs        → Clean Data
-│
-↓
-Generate Embeddings
-├── Model: sentence-transformers (384-dim)
-├── Batch Processing: 32 documents/batch
-│
-↓
-Store in ChromaDB
-├── Resumes Collection
-├── Jobs Collection
-│
-↓
-Query & Search
-├── Similarity Search
-├── Category Filtering
-├── Ranking & Scoring
-```
-
-## 📝 Data Cleaning
-
-All data has been cleaned and prepared:
-
-- **job_title_des_cleaned.csv** (2,277 records)
-  - Columns: Job Title, Job Description
-  - HTML removed ✓
-  - Ready for embeddings ✓
-
-- **job_descriptions_2_cleaned.csv.gz** (30,002 records)
-  - Compressed: 38.73 MB (67% reduction)
-  - GitHub-compliant ✓
-
-## 🔧 Configuration
-
-Edit `Rag/chroma_ingestion.py` to customize:
-
-```python
-# Embedding model
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"  # Change for different accuracy/speed tradeoff
-
-# Batch processing
-BATCH_SIZE = 32  # Adjust for memory constraints
-
-# Database location
-CHROMA_DB_PATH = Path(__file__).parent.parent / "Data" / "chromadb"
-```
-
-## 📚 Advanced Features
-
-### Metadata Filtering
-
-```python
-# Query only IT resumes
-resumes = matcher.find_resumes_for_job(
-    job_title="DevOps Engineer",
-    job_description="Kubernetes, AWS...",
-    category_filter="INFORMATION-TECHNOLOGY"
-)
-```
-
-### Minimum Similarity Threshold
-
-```python
-# Only show highly similar matches (> 70%)
-jobs = matcher.find_jobs_for_resume(
-    resume_text="...",
-    min_score=0.7
-)
-```
-
-### Direct ChromaDB Access
-
-```python
-from chroma_setup import get_or_create_db
-
-client, resumes_col, jobs_col = get_or_create_db()
-
-# Custom query
-results = jobs_col.query(
-    query_embeddings=[...],
-    n_results=20,
-    where={"job_title": {"$contains": "Engineer"}}
-)
-```
-
-## 🐛 Troubleshooting
-
-**Q: "ModuleNotFoundError: No module named 'chromadb'"**
-- A: Run `pip install -r Rag\requirements_chroma.txt`
-
-**Q: "CUDA out of memory"**
-- A: Embeddings use CPU by default. Force CPU in code:
-  ```python
-  embedder = ChromaEmbedder()
-  # CPU is used automatically for small models
-  ```
-
-**Q: PDF extraction produces empty text**
-- A: Some PDFs may be scanned images. Install OCR:
-  ```powershell
-  pip install pytesseract pillow
-  ```
-
-**Q: Reset ChromaDB data**
-- A: Delete the database folder:
-  ```powershell
-  Remove-Item "Data\chromadb" -Recurse -Force
-  python Rag\chroma_setup.py
-  ```
-
-## 📖 Documentation
-
-- **Setup Guide**: `Rag/CHROMA_SETUP.md`
-- **Quick Start**: `Rag/quickstart.py`
-- **Matcher API**: `Rag/career_coach_matcher.py`
-
-## 🎓 Learning Resources
-
-- [ChromaDB Documentation](https://docs.trychroma.com/)
-- [Sentence Transformers](https://www.sbert.net/)
-- [Vector Databases Guide](https://www.deepset.ai/blog/the-complete-guide-to-vector-databases)
-- [Semantic Search](https://huggingface.co/blog/semantic-search)
-
-## 📋 Next Steps
-
-- [ ] Build REST API (FastAPI/Flask)
-- [ ] Create web frontend
-- [ ] Implement skills extraction
-- [ ] Add interview prep module
-- [ ] Deploy to cloud (Azure)
-- [ ] Add real-time resume updates
-
-## 👥 Contributors
-
-- Robin De Meyer
-- Roan Vandemeulebroucke
-
-## 📄 License
-
-Project Information: AI Career Coach Application (2025-2026)
-
----
-
-**Status**: ✅ Vector Database Setup Complete | Ready for Integration
-
-Last Updated: November 19, 2025
+Educational project - Howest University
